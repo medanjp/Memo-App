@@ -41,7 +41,7 @@
     <ul id="list">
       <!-- ここに追加データが挿入される -->
     </ul>
-    <footer>Gs</footer>
+    <footer>MY HR</footer>
     <!-- 以下にjsを書いていきます -->
     <script>
       //1.Save クリックイベント
@@ -49,10 +49,12 @@
         const from = $("#from").val();
         const to = $("#to").val();
         const key = $("#topic").val();
+        const status = "pending";
         const input = {
           from: from,
           to: to,
           goal: $("#goal").val(),
+          status: status
         };
         const value = JSON.stringify(input);
 
@@ -70,9 +72,14 @@
         const html = `
     <li>
       <h3>${key}</h3>
-      <p><strong>From:</strong> ${input.from}</p>
-      <p><strong>To:</strong> ${input.to}</p>
-      <p><strong>Goal:</strong> ${input.goal}</p>
+      <p>From: ${input.from}</p>
+      <p>To: ${input.to}</p>
+      <p>Goal: ${input.goal}</p>
+      <p>Status: ${input.status}</p>
+      <form action="#" method="post">
+      <p>Comment: <br>
+	    <textarea name="comment" cols="30" rows="5"></textarea></p>
+      <p><input type="submit" value="submit"></p>
     </li>
   `;
         $("#list").append(html);
@@ -93,16 +100,30 @@
         const key = localStorage.key(i);
         const value = localStorage.getItem(key);
         array = JSON.parse(value);
-        console.log(array);
 
         const html = `
   <li>
     <h3>${key}</h3>
-    <p><strong>From:</strong> ${array.from}</p>
-    <p><strong>To:</strong> ${array.to}</p>
-    <p><strong>Goal:</strong> ${array.goal}</p>
+    <p>From: ${array.from}</p>
+    <p>To: ${array.to}</p>
+    <p>Goal: ${array.goal}</p>
+    <p>Status: ${array.status}</p>
+    <form action="" method="post">
+      <p>Comment: </p>
+	    <textarea name="comment" cols="30" rows="5"></textarea></p>
+      <p><input type="submit" value="Done"></p>
+      </form>
+      
   </li>
 `;
+
+$(document).on("click", "input[type=submit]", function(event) {
+   event.preventDefault(); 
+  var listItem = $(this).closest("li");
+  var statusElement = listItem.find("p:contains('Status:')");
+  statusElement.text("Status: Done");
+});
+
 
         $("#list").append(html);
       }
