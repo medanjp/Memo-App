@@ -25,9 +25,9 @@
           <option value="FINANCE">FINANCE</option>
         </select>
         <label for="from">From: </label>
-        <input type="date" id="from" pattern="\d{4}-\d{2}-\d{2}" />
+        <input type="date" id="from" />
         <label for="to">To: </label>
-        <input type="date" id="to" pattern="\d{4}-\d{2}-\d{2}" />
+        <input type="date" id="to" />
         <label for="goal">Goal: </label>
         <textarea id="goal" placeholder="ゴールを入力"></textarea>
       </div>
@@ -54,23 +54,24 @@
           from: from,
           to: to,
           goal: $("#goal").val(),
-          status: status
+          status: status,
+          comment: "",
         };
         const value = JSON.stringify(input);
 
-        
         if (to < from) {
           alert("The 'To' date cannot be earlier than the 'From' date.");
           return; // Exit the function and do not save the goal
         }
-        if (key === ""){
+        if (key === "") {
           alert("Please choose a topic");
           return;
         } else {
           localStorage.setItem(key, value);
         }
+
         const html = `
-    <li>
+    <li data-goal-id="${key}">
       <h3>${key}</h3>
       <p>From: ${input.from}</p>
       <p>To: ${input.to}</p>
@@ -79,7 +80,7 @@
       <form action="#" method="post">
       <p>Comment: <br>
 	    <textarea name="comment" cols="30" rows="5"></textarea></p>
-      <p><input type="submit" value="submit"></p>
+      <p><input type="submit" value="Done"></p>
     </li>
   `;
         $("#list").append(html);
@@ -94,39 +95,66 @@
         localStorage.clear();
         $("#list").empty();
       });
+
       //3.ページ読み込み：保存データ取得表示
 
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         const value = localStorage.getItem(key);
         array = JSON.parse(value);
-
-        const html = `
-  <li>
+        var html = `
+  <li data-goal-id="${key}">
     <h3>${key}</h3>
     <p>From: ${array.from}</p>
     <p>To: ${array.to}</p>
     <p>Goal: ${array.goal}</p>
     <p>Status: ${array.status}</p>
+    
+`;
+        if (array.status !== "Done") {
+          // Append the textarea and input when status is not "Done"
+          html += `
     <form action="" method="post">
       <p>Comment: </p>
-	    <textarea name="comment" cols="30" rows="5"></textarea></p>
+      <textarea name="comment" cols="30" rows="5"></textarea>
       <p><input type="submit" value="Done"></p>
-      </form>
-      
-  </li>
-`;
-
-$(document).on("click", "input[type=submit]", function(event) {
-   event.preventDefault(); 
-  var listItem = $(this).closest("li");
-  var statusElement = listItem.find("p:contains('Status:')");
-  statusElement.text("Status: Done");
-});
-
+    </form>
+  `;
+        }
+        html += `
+        <p>Comment: ${array.comment}</p>
+        </li>`;
 
         $("#list").append(html);
       }
+
+      $(document).on("click", "input[type=submit]", function (event) {
+        event.preventDefault();
+        const listItem = $(this).closest("li");
+        const goalId = listItem.data("goal-id");
+        const commentTextarea = listItem.find("textarea[name='comment']");
+        const statusElement = listItem.find("p:contains('Status:')");
+
+        const comment = commentTextarea.val();
+        if (comment) {
+          const existingComment = listItem.find("p:contains('Comment:')");
+          existingComment.text(`Comment: ${comment}`);
+          statusElement.text("Status: Done");
+          const storedValue = localStorage.getItem(goalId);
+          commentTextarea.val("");
+          commentTextarea.hide();
+          $(this).hide();
+
+          if (storedValue) {
+            const storedData = JSON.parse(storedValue);
+            storedData.comment = comment;
+            storedData.status = "Done";
+            localStorage.setItem(goalId, JSON.stringify(storedData));
+          }
+        } else {
+          alert("Please add a comment");
+        }
+      });
     </script>
   </body>
 </html>
